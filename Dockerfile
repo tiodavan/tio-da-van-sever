@@ -18,10 +18,13 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/prisma ./prisma
 COPY package*.json ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+
+RUN npm ci --omit=dev
+
+USER node
 
 EXPOSE 3000
 
