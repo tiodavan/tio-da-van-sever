@@ -1,30 +1,27 @@
-# Stage 1: Builder
+# Stage 1 — builder
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
+COPY prisma ./prisma/
+
 RUN npm ci
 
-COPY prisma ./prisma
-RUN npx prisma generate
-
 COPY . .
-RUN npm run build && ls dist/main.js
 
-# Stage 2: Runner
+RUN npx prisma generate
+RUN npm run build
+
+# Stage 2 — runner
 FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci --omit=dev && npx prisma generate
-
 COPY --from=builder /app/dist ./dist
-COPY prisma ./prisma
-COPY prisma.config.ts ./
-
-USER node
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY package*.json ./
 
 EXPOSE 3000
 
