@@ -21,8 +21,9 @@ WORKDIR /app
 COPY package*.json ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+COPY prisma.config.ts ./
 
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev && npx prisma generate
 
 USER node
 

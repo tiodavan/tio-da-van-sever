@@ -1,15 +1,12 @@
-import { defineConfig } from 'prisma/config';
-
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-  require('dotenv').config();
-} catch {
-  // Production: DATABASE_URL is injected by the runtime environment
-}
+import 'dotenv/config';
+import { defineConfig, env } from 'prisma/config';
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
     path: 'prisma/migrations',
+  },
+  datasource: {
+    url: env('DATABASE_URL'),
   },
 });
