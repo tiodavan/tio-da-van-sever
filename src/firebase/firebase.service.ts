@@ -21,6 +21,7 @@ export class FirebaseService implements OnModuleInit {
       this.logger.warn(
         'Firebase credentials not fully configured — Auth, FCM and RT DB features will be unavailable',
       );
+      return;
     }
 
     if (!admin.apps.length) {
