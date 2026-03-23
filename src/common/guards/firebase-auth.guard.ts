@@ -49,7 +49,9 @@ export class FirebaseAuthGuard implements CanActivate {
       this.logger.warn(
         `Token verification failed for request [${request.method}] ${request.url}: ${(error as Error).message}`,
       );
-      throw new UnauthorizedException('Invalid or expired authentication token');
+      throw new UnauthorizedException(
+        'Invalid or expired authentication token',
+      );
     }
   }
 }

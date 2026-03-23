@@ -38,7 +38,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? 'Internal server error'
         : typeof rawMessage === 'string'
           ? rawMessage
-          : (rawMessage as Record<string, unknown>).message ?? rawMessage;
+          : ((rawMessage as Record<string, unknown>).message ?? rawMessage);
 
     const errorBody: ErrorBody = {
       statusCode: status,

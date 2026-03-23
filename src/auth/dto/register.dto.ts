@@ -5,19 +5,24 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
+  ValidateIf,
 } from 'class-validator';
 import { CompanyType, Role } from '@prisma/client';
 
 export class RegisterDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   name: string;
 
   @IsEmail()
+  @MaxLength(150)
   email: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(20)
   phone?: string;
 
   @IsDateString()
@@ -28,27 +33,39 @@ export class RegisterDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(255)
   fcmToken?: string;
 
   // ── Driver-only fields ───────────────────────────────────────────────────
-  @IsOptional()
+
+  @ValidateIf((o: RegisterDto) => o.role === Role.driver)
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
   taxId?: string;
 
-  @IsOptional()
+  @ValidateIf((o: RegisterDto) => o.role === Role.driver)
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
   legalName?: string;
 
-  @IsOptional()
+  @ValidateIf((o: RegisterDto) => o.role === Role.driver)
   @IsEnum(CompanyType)
+  @IsNotEmpty()
   companyType?: CompanyType;
 
   // ── Student-only fields ──────────────────────────────────────────────────
-  @IsOptional()
+
+  @ValidateIf((o: RegisterDto) => o.role === Role.driver)
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
   school?: string;
 
-  @IsOptional()
+  @ValidateIf((o: RegisterDto) => o.role === Role.student)
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
   pickupAddress?: string;
 }

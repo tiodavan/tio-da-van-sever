@@ -17,9 +17,7 @@ export class MarketplaceService {
       ? parseFloat(filters.min_rating)
       : undefined;
 
-    this.logger.log(
-      `Marketplace search — filters: ${JSON.stringify(filters)}`,
-    );
+    this.logger.log(`Marketplace search — filters: ${JSON.stringify(filters)}`);
 
     const drivers = await this.prisma.driver.findMany({
       where: {
@@ -78,7 +76,10 @@ export class MarketplaceService {
           ? driver.reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
           : null;
 
-      if (minRating !== undefined && (averageRating === null || averageRating < minRating)) {
+      if (
+        minRating !== undefined &&
+        (averageRating === null || averageRating < minRating)
+      ) {
         continue;
       }
 
@@ -96,9 +97,7 @@ export class MarketplaceService {
       );
     }
 
-    this.logger.log(
-      `Marketplace search returned ${results.length} driver(s)`,
-    );
+    this.logger.log(`Marketplace search returned ${results.length} driver(s)`);
 
     return results;
   }

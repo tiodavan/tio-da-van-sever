@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -24,8 +23,6 @@ export class AuthService {
     if (existing) {
       throw new ConflictException(`User with uid ${uid} is already registered`);
     }
-
-    this.validateRoleFields(dto);
 
     const user = await this.prisma.$transaction(async (tx) => {
       const created = await tx.user.create({
@@ -92,23 +89,5 @@ export class AuthService {
     }
 
     return AuthResponseDto.from(UserResponseDto.from(user));
-  }
-
-  private validateRoleFields(dto: RegisterDto): void {
-    if (dto.role === Role.driver) {
-      if (!dto.taxId || !dto.legalName || !dto.companyType) {
-        throw new BadRequestException(
-          'Driver registration requires: taxId, legalName, companyType',
-        );
-      }
-    }
-
-    if (dto.role === Role.student) {
-      if (!dto.school || !dto.pickupAddress) {
-        throw new BadRequestException(
-          'Student registration requires: school, pickupAddress',
-        );
-      }
-    }
   }
 }
