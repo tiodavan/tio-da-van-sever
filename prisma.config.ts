@@ -1,6 +1,5 @@
 import { defineConfig } from 'prisma/config';
 
-// Load .env for local CLI usage (dotenv is a devDependency — not available in production)
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
   require('dotenv').config();
@@ -12,8 +11,5 @@ export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
     path: 'prisma/migrations',
-  },
-  datasource: {
-    url: process.env['DATABASE_URL'],
   },
 });
