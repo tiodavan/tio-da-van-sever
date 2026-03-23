@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  driver
+  guardian
+  student
+}
+
+enum CompanyType {
+  individual
+  legal_entity
+}
+
+enum DriverStatus {
+  pending
+  active
+  suspended
+}
+
+enum TripStatus {
+  scheduled
+  active
+  completed
+}
+
+enum TripEventType {
+  trip_started
+  pickup
+  missed_pickup
+  arrived_school
+  dropoff
+  trip_ended
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  phone         String?
+  dateOfBirth   DateTime @map("date_of_birth")
+  fcmToken      String?  @map("fcm_token")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  roles         UserRole[]
+  company       Company?
+  driver        Driver?
+  student       Student?
+  guardianOf    Guardianship[] @relation("Guardian")
+  studentOf     Guardianship[] @relation("Student")
+  reviews       Review[]       @relation("Reviewer")
+
+  @@map("users")
+}
+
+model UserRole {
+  userId  String @map("user_id")
+  role    Role
+
+  user    User   @relation(fields: [userId], references: [id])
+
+  @@id([userId, role])
+  @@map("user_roles")
+}
+
+model Company {
+  id           String      @id @default(uuid())
+  userId       String      @unique @map("user_id")
+  taxId        String      @map("tax_id")
+  legalName    String      @map("legal_name")
+  type         CompanyType
+  plan         String?
+
+  user         User        @relation(fields: [userId], references: [id])
+  driver       Driver?
+
+  @@map("companies")
+}
+
+model Driver {
+  userId        String       @id @map("user_id")
+  companyId     String       @unique @map("company_id")
+  licenseUrl    String?      @map("license_url")
+  vehicleRegUrl String?      @map("vehicle_reg_url")
+  bgCheckUrl    String?      @map("bg_check_url")
+  status        DriverStatus @default(pending)
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  user          User         @relation(fields: [userId], references: [id])
+  company       Company      @relation(fields: [companyId], references: [id])
+  vehicles      Vehicle[]
+  routes        Route[]
+  reviews       Review[]
+
+  @@map("drivers")
+}
+
+model Vehicle {
+  id        String @id @default(uuid())
+  driverId  String @map("driver_id")
+  make      String
+  model     String
+  color     String
+  year      Int
+  plate     String
+  capacity  Int
+
+  driver    Driver @relation(fields: [driverId], references: [userId])
+
+  @@map("vehicles")
+}
+
+model Student {
+  userId        String @id @map("user_id")
+  school        String
+  pickupAddress String @map("pickup_address")
+
+  user          User        @relation(fields: [userId], references: [id])
+  presences     Presence[]
+  tripEvents    TripEvent[]
+
+  @@map("students")
+}
+
+model Guardianship {
+  guardianUserId String   @map("guardian_user_id")
+  studentUserId  String   @map("student_user_id")
+  approved       Boolean  @default(false)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  guardian       User     @relation("Guardian", fields: [guardianUserId], references: [id])
+  student        User     @relation("Student", fields: [studentUserId], references: [id])
+
+  @@id([guardianUserId, studentUserId])
+  @@map("guardianships")
+}
+
+model Route {
+  id            String   @id @default(uuid())
+  driverId      String   @map("driver_id")
+  origin        String
+  destination   String
+  departureTime String   @map("departure_time")
+  weekdays      String[]
+  slots         Int
+  active        Boolean  @default(true)
+
+  driver        Driver   @relation(fields: [driverId], references: [userId])
+  trips         Trip[]
+
+  @@map("routes")
+}
+
+model Trip {
+  id             String     @id @default(uuid())
+  routeId        String     @map("route_id")
+  date           DateTime
+  status         TripStatus @default(scheduled)
+  trackingActive Boolean    @default(false) @map("tracking_active")
+  createdAt      DateTime   @default(now()) @map("created_at")
+
+  route          Route       @relation(fields: [routeId], references: [id])
+  presences      Presence[]
+  events         TripEvent[]
+
+  @@map("trips")
+}
+
+model Presence {
+  id          String    @id @default(uuid())
+  tripId      String    @map("trip_id")
+  studentId   String    @map("student_id")
+  confirmed   Boolean?
+  confirmedAt DateTime? @map("confirmed_at")
+  deadlineAt  DateTime  @map("deadline_at")
+
+  trip        Trip      @relation(fields: [tripId], references: [id])
+  student     Student   @relation(fields: [studentId], references: [userId])
+
+  @@map("presences")
+}
+
+model TripEvent {
+  id         String        @id @default(uuid())
+  tripId     String        @map("trip_id")
+  studentId  String?       @map("student_id")
+  type       TripEventType
+  lat        Decimal?      @db.Decimal(9, 6)
+  lng        Decimal?      @db.Decimal(9, 6)
+  occurredAt DateTime      @default(now()) @map("occurred_at")
+
+  trip       Trip          @relation(fields: [tripId], references: [id])
+  student    Student?      @relation(fields: [studentId], references: [userId])
+
+  @@map("trip_events")
+}
+
+model Review {
+  id             String   @id @default(uuid())
+  driverId       String   @map("driver_id")
+  reviewerUserId String   @map("reviewer_user_id")
+  rating         Int
+  punctuality    Int
+  safety         Int
+  communication  Int
+  comment        String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  driver         Driver   @relation(fields: [driverId], references: [userId])
+  reviewer       User     @relation("Reviewer", fields: [reviewerUserId], references: [id])
+
+  @@map("reviews")
+}
