@@ -49,19 +49,3 @@ jobs:
 
       - name: Run tests
         run: npm run test
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy to Railway
-        run: railway up --service tio-da-van-sever
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
